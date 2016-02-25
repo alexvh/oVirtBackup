@@ -104,11 +104,25 @@ def main(argv):
                 Logger.log("!!! No snapshot found")
                 has_errors = True
                 continue
-            snapshot_param = params.Snapshot(id=snapshots[0].id)
-            snapshots_param = params.Snapshots(snapshot=[snapshot_param])
+            snapshot = snapshots[0]
+            snapshot_param = params.Snapshot(id=snapshot.id)
+            snapshots_param = params.Snapshots(snapshot=[snapshot_param], collapse_snapshots=True)
+            if config.get_vm_clone_domain() is not None:
+                clone_sd = api.storagedomains.get(name=config.get_vm_clone_domain())
+                if not clone_sd:
+                    Logger.log("!!! Unknown storage domain value for vm_clone_domain")
+                    has_errors = True
+                    continue
+                vm_clone_disks = []
+                for disk in snapshot.disks.list():
+                    vm_clone_disks.append(params.Disk(image_id=disk.get_id(),
+                                          storage_domains=params.StorageDomains(storage_domain=[clone_sd])))
+            else:
+                vm_clone_disks = snapshot.disks.list()
+
             Logger.log("Clone into VM started ...")
             if not config.get_dry_run():
-                api.vms.add(params.VM(name=vm_clone_name, memory=vm.get_memory(), cluster=api.clusters.get(config.get_cluster_name()), snapshots=snapshots_param))    
+                api.vms.add(params.VM(name=vm_clone_name, memory=vm.get_memory(), cluster=api.clusters.get(config.get_cluster_name()), snapshots=snapshots_param, disks=params.Disks(disk=vm_clone_disks)))
                 VMTools.wait_for_vm_operation(api, config, "Cloning", vm_from_list)
             Logger.log("Cloning finished")
         

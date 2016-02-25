@@ -10,7 +10,7 @@ class Config(object):
     """
     def __init__(self, config_file, debug):
         try:
-            config_parser = ConfigParser.RawConfigParser({'vm_disks': '{}' })
+            config_parser = ConfigParser.RawConfigParser({'vm_disks': '{}', 'vm_clone_domain': None})
             config_parser.read(config_file)
             section = "config"
             self.__vm_names = json.loads(config_parser.get(section, "vm_names"))
@@ -24,6 +24,7 @@ class Config(object):
             self.__snapshot_description = config_parser.get(section, "snapshot_description")
             self.__cluster_name = config_parser.get(section, "cluster_name")
             self.__export_domain = config_parser.get(section, "export_domain")
+            self.__vm_clone_domain = config_parser.get(section, "vm_clone_domain")
             self.__timeout = config_parser.getint(section, "timeout")
             self.__backup_keep_count = config_parser.getint(section, "backup_keep_count")
             self.__dry_run = config_parser.getboolean(section, "dry_run")
@@ -78,6 +79,10 @@ class Config(object):
 
     def get_export_domain(self):
         return self.__export_domain
+
+
+    def get_vm_clone_domain(self):
+        return self.__vm_clone_domain
 
 
     def get_timeout(self):
