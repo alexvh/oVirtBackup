@@ -74,12 +74,22 @@ def main(argv):
         
             # Delete old backup snapshots
             VMTools.delete_snapshots(vm, config, vm_from_list)
-        
+
+            # Determine disks to snapshot
+            vm_disks = []
+            try:
+                config_disks = config.get_vm_disks()[vm_from_list]
+            except KeyError:
+                config_disks = None
+            for vm_disk in vm.disks.list():
+                if config_disks is None or vm_disk.get_name() in config_disks:
+                    vm_disks.append(vm_disk)
+
             # Create a VM snapshot:
             try:
                 Logger.log("Snapshot creation started ...")
                 if not config.get_dry_run():
-                    vm.snapshots.add(params.Snapshot(description=config.get_snapshot_description(), vm=vm))
+                    vm.snapshots.add(params.Snapshot(description=config.get_snapshot_description(), vm=vm, disks=params.Disks(disk=vm_disks)))
                     VMTools.wait_for_snapshot_operation(vm, config, "creation")
                 Logger.log("Snapshot created")
             except Exception as e:

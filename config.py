@@ -10,10 +10,11 @@ class Config(object):
     """
     def __init__(self, config_file, debug):
         try:
-            config_parser = ConfigParser.RawConfigParser()
+            config_parser = ConfigParser.RawConfigParser({'vm_disks': '{}' })
             config_parser.read(config_file)
             section = "config"
             self.__vm_names = json.loads(config_parser.get(section, "vm_names"))
+            self.__vm_disks = json.loads(config_parser.get(section, "vm_disks"))
             self.__vm_middle = config_parser.get(section, "vm_middle")
             self.__vm_suffix = "_"
             self.clear_vm_suffix
@@ -37,7 +38,12 @@ class Config(object):
 
     def get_vm_names(self):
         return self.__vm_names
-    
+
+
+    def get_vm_disks(self):
+        return self.__vm_disks
+
+
     def get_vm_middle(self):
         return self.__vm_middle
 
